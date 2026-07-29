@@ -1121,7 +1121,7 @@
             document.getElementById('valorTotalModal').textContent = 'R$ ' + total.toFixed(2);
         }
 
-        // ===== GERAR PIX =====
+        // ===== GERAR PIX (CORRIGIDO - DO JEITO QUE O DONO PEDIU) =====
         async function gerarPix() {
             const btn = document.querySelector('.btn-buy');
             const textoOriginal = btn.textContent;
@@ -1135,6 +1135,7 @@
                 if (upsellsSelecionados.includes('call')) total += 4.99;
                 if (upsellsSelecionados.includes('especial')) total += 14.99;
 
+                // Faz a requisição para o seu servidor / back-end
                 const response = await fetch('/api/criar-pix', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1148,8 +1149,21 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    document.getElementById('qrCodeImage').src = data.pix.qrCode;
-                    document.getElementById('codigoPix').value = data.pix.codigoCopiaCola;
+                    // ================================================================
+                    // AQUI ESTÁ A CORREÇÃO QUE O DONO DA ZPAY PEDIU:
+                    // Estamos usando o 'raw.copyPaste' e o 'raw.qrCodeBase64'
+                    // ================================================================
+                    
+                    // 1. Pega o QR Code já pronto em Base64 (vindo da ZPay)
+                    const qrCodeBase64 = data.pix.raw.qrCodeBase64;
+                    
+                    // 2. Pega o texto completo do PIX (copia e cola)
+                    const textoPixCompleto = data.pix.raw.copyPaste;
+
+                    // 3. Exibe no modal
+                    document.getElementById('qrCodeImage').src = qrCodeBase64;
+                    document.getElementById('codigoPix').value = textoPixCompleto;
+                    
                     document.getElementById('modalPix').classList.add('active');
                     document.getElementById('statusPix').textContent = '⏳ Aguardando pagamento...';
                     document.getElementById('statusPix').className = 'status-pix';
