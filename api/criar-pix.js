@@ -12,33 +12,54 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { id } = req.query;
+        const { valor, descricao, nome_cliente } = req.body;
 
         const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
         const CLIENT_SECRET = 'zsk_87b13fb23ba5eed5d6d9f0f9e6153d20dfeac10e24a66dd6';
         const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
 
-        const response = await axios.get(
-            `${ZPAY_API_URL}/donations?limit=50&status=paid`,
+        console.log('📤 Enviando para Zpay:', { valor, descricao, nome_cliente });
+
+        const response = await axios.post(
+            `${ZPAY_API_URL}/payments`,
+            {
+                amount: parseFloat(valor),
+                payerName: nome_cliente || 'Cliente',
+                description: descricao || 'Produto',
+                // Se tiver tag, descomente:
+                // tag: 'grupo_zangii'
+            },
             {
                 headers: {
+                    'Content-Type': 'application/json',
                     'client-id': CLIENT_ID,
                     'client-secret': CLIENT_SECRET
                 }
             }
         );
 
-        const donations = response.data.donations || response.data || [];
-        const found = donations.find(d => d.id === id || d.paymentId === id);
+        console.log('✅ Resposta Zpay:', response.data);
 
         res.status(200).json({
-            status: found ? 'paid' : 'pending'
+            success: true,
+            pix: {
+                qrCode: response.data.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${response.data.id}`,
+                codigoCopiaCola: response.data.pixCode || response.data.id
+            },
+            transactionId: response.data.id
         });
 
     } catch (error) {
-        console.error('Erro ao verificar:', error.response?.data || error.message);
+        console.error('❌ Erro na Zpay:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+
+        // Retorna o erro detalhado da Zpay
         res.status(400).json({
-            error: 'Erro ao verificar pagamento'
+            success: false,
+            error: error.response?.data?.message || error.message || 'Erro ao gerar PIX'
         });
     }
 };
