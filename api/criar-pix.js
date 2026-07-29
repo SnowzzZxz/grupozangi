@@ -36,37 +36,59 @@ module.exports = async (req, res) => {
             }
         );
 
-        console.log('✅ Resposta Zpay COMPLETA:', JSON.stringify(response.data, null, 2));
+        console.log('✅ Resposta Zpay:', JSON.stringify(response.data, null, 2));
 
-        // Extrai os dados corretamente
         const data = response.data;
-        const paymentId = data.id || data.paymentId || data.transactionId;
 
-        // Tenta encontrar o QR Code e o código Pix
-        const qrCode = data.qrCode || data.qr_code || data.qrCodeImage || data.pixQrCode || null;
-        const pixCode = data.pixCode || data.pix_code || data.brCode || data.pixCopiaCola || data.pixKey || null;
+        // 🔥 CAPTURA TODOS OS CAMPOS POSSÍVEIS
+        const paymentId = data.id || data.paymentId || data.transactionId || data.payment_id;
 
-        // Se a Zpay retornou um link de pagamento, podemos gerar um QR Code a partir dele
-        const paymentLink = data.paymentUrl || data.url || data.checkoutUrl || data.link || null;
+        // QR Code - tenta vários nomes de campo
+        const qrCode = data.qrCode || data.qr_code || data.qrCodeImage || data.pixQrCode || data.qrcode || data.qr || null;
 
-        // Se não veio QR Code da Zpay, gera um QR Code genérico
-        const finalQrCode = qrCode || (pixCode ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}` : null);
+        // Código Pix (copia e cola) - tenta vários nomes
+        const pixCode = data.pixCode || data.pix_code || data.brCode || data.pixCopiaCola || data.pixKey || data.pix || data.pixQrCode || null;
+
+        // Link de pagamento
+        const paymentLink = data.paymentUrl || data.url || data.checkoutUrl || data.link || data.payment_link || null;
+
+        // Se veio a resposta mas não os campos específicos, tenta extrair de dentro de objetos aninhados
+        let finalQrCode = qrCode;
+        let finalPixCode = pixCode;
+
+        // Se não encontrou, procura dentro de objetos
+        if (!finalQrCode && data.pix && data.pix.qrCode) {
+            finalQrCode = data.pix.qrCode;
+            finalPixCode = data.pix.pixCode || data.pix.code;
+        }
+
+        if (!finalQrCode && data.data && data.data.qrCode) {
+            finalQrCode = data.data.qrCode;
+            finalPixCode = data.data.pixCode || data.data.code;
+        }
+
+        // Se ainda não tem, usa o paymentId como fallback
+        if (!finalQrCode && paymentId) {
+            finalQrCode = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentId)}`;
+        }
+
+        if (!finalPixCode && paymentId) {
+            finalPixCode = paymentId;
+        }
 
         // Se não veio nada, avisa
-        if (!paymentId || (!finalQrCode && !pixCode && !paymentLink)) {
-            console.error('❌ Zpay não retornou dados suficientes:', data);
+        if (!paymentId) {
             return res.status(400).json({
                 success: false,
-                error: 'A Zpay não retornou os dados do PIX. Resposta: ' + JSON.stringify(data)
+                error: 'Zpay não retornou ID do pagamento. Resposta: ' + JSON.stringify(data)
             });
         }
 
         res.status(200).json({
             success: true,
             pix: {
-                qrCode: finalQrCode || paymentLink,
-                codigoCopiaCola: pixCode || paymentId || paymentLink,
-                paymentId: paymentId,
+                qrCode: finalQrCode || paymentLink || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentId)}`,
+                codigoCopiaCola: finalPixCode || paymentId,
                 raw: data // opcional, pra debug
             },
             transactionId: paymentId
