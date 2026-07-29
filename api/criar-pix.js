@@ -35,69 +35,42 @@ module.exports = async (req, res) => {
         );
 
         const data = response.data;
+        console.log('📦 Resposta Zpay:', JSON.stringify(data, null, 2));
 
-        // 🔥 FUNÇÃO PARA EXTRAIR O CÓDIGO PIX REAL
-        function extrairCodigoPix(obj) {
-            // Lista de campos que podem conter o código Pix
-            const campos = [
-                'pixCode', 'pix_code', 'pix', 'brCode', 'pixCopiaCola',
-                'pixKey', 'qrCodeString', 'payload', 'pixPayload',
-                'code', 'paymentCode', 'transactionCode', 'qrCode',
-                'qr_code', 'pixQrCode'
-            ];
-
-            // Procura em todos os campos do objeto
-            for (const campo of campos) {
-                if (obj[campo] && typeof obj[campo] === 'string') {
-                    const valor = obj[campo];
-                    // Se começa com "000201" ou contém "br.gov.bcb.pix", é o código Pix
-                    if (valor.startsWith('000201') || valor.includes('br.gov.bcb.pix')) {
-                        return valor;
-                    }
-                    // Se parece com um código Pix (começa com números e tem pontuação)
-                    if (/^[0-9]{6}/.test(valor) && valor.length > 30) {
-                        return valor;
-                    }
-                }
-            }
-
-            // Procura dentro de objetos aninhados
-            for (const key of Object.keys(obj)) {
-                if (obj[key] && typeof obj[key] === 'object') {
-                    const resultado = extrairCodigoPix(obj[key]);
-                    if (resultado) return resultado;
-                }
-            }
-
-            return null;
-        }
-
-        // 🔥 EXTRAI O CÓDIGO PIX REAL
-        let pixCode = extrairCodigoPix(data);
-
-        // Se não encontrou, usa o ID como fallback
-        if (!pixCode) {
-            pixCode = data.id || data.paymentId || data.transactionId;
-        }
-
-        // 🔥 GERA QR CODE A PARTIR DO CÓDIGO PIX
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
+        // ============================================================
+        // 🔥 CORREÇÃO: USA O CAMPO CERTO
+        // ============================================================
+        // O dono da Zpay disse:
+        // - O código Pix copia e cola vem no campo "copypaste" (ou pixCode/brCode)
+        // - O paymentId é só o ID interno, NÃO é o código Pix
+        // - O QR Code pode vir pronto (qrCodeURL) ou vc gera a partir do copypaste
+        // ============================================================
 
         const paymentId = data.id || data.paymentId || data.transactionId;
 
-        if (!paymentId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Zpay não retornou ID do pagamento.'
-            });
+        // 🔥 CAMPO CERTO: copypaste (ou pixCode, brCode, etc)
+        const codigoPix = data.copypaste || data.pixCode || data.pix_code || data.brCode || data.pix || data.payload || null;
+
+        // 🔥 QR Code: se a Zpay já retorna, usa ele. Senão, gera a partir do copypaste
+        const qrCodeURL = data.qrCodeURL || data.qrCode || data.qr_code || data.qrCodeImage || null;
+
+        // Se não veio QR Code pronto, gera a partir do código Pix
+        let qrCodeFinal = qrCodeURL;
+        if (!qrCodeFinal && codigoPix) {
+            qrCodeFinal = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix)}`;
+        }
+
+        // Se ainda não tem QR Code, usa o paymentId como fallback (mas não é ideal)
+        if (!qrCodeFinal) {
+            qrCodeFinal = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentId)}`;
         }
 
         res.status(200).json({
             success: true,
             pix: {
-                qrCode: qrCodeUrl,
-                codigoCopiaCola: pixCode,
-                raw: data
+                qrCode: qrCodeFinal,
+                codigoCopiaCola: codigoPix || paymentId, // USA O copypaste, NÃO o paymentId
+                paymentId: paymentId // só pra referência
             },
             transactionId: paymentId
         });
