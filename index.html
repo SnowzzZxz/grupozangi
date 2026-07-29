@@ -661,14 +661,18 @@
             font-weight: 600;
             font-size: 13px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
             white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(255, 0, 255, 0.3);
         }
         .modal-content .pix-code-area button:hover {
             background: #e055e0;
+            transform: scale(1.02);
         }
         .modal-content .pix-code-area button.copiado {
             background: #4ade80;
+            color: #1a1a1a;
+            box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
         }
 
         .modal-content .total-modal {
@@ -704,19 +708,19 @@
             text-decoration: underline;
         }
 
-        /* ===== TOAST ANIMADO ===== */
+        /* ===== TOAST LIMPO ===== */
         .toast {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%) translateY(80px);
             background: #1a1a1a;
-            color: #4ade80;
-            padding: 14px 28px;
+            color: #fff;
+            padding: 12px 24px;
             border-radius: 12px;
             border: 1px solid #4ade80;
-            font-weight: 600;
-            font-size: 15px;
+            font-weight: 500;
+            font-size: 14px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             z-index: 9999;
             opacity: 0;
@@ -728,7 +732,7 @@
             transform: translateX(-50%) translateY(0);
         }
         .toast .toast-icon {
-            margin-right: 8px;
+            display: none;
         }
 
         /* ===== RESPONSIVO ===== */
@@ -792,7 +796,7 @@
             }
             .toast {
                 font-size: 13px;
-                padding: 12px 20px;
+                padding: 10px 18px;
                 width: 90%;
             }
         }
@@ -1158,7 +1162,6 @@
 
                     verificarPagamento(data.transactionId);
                 } else {
-                    // Usa toast em vez de alert
                     const toast = document.getElementById('toast');
                     const toastMsg = document.getElementById('toastMessage');
                     toastMsg.innerHTML = '❌ ' + data.error;
@@ -1213,7 +1216,7 @@
             document.getElementById('modalPix').classList.remove('active');
         }
 
-        // ===== COPIAR CÓDIGO COM TOAST ANIMADO =====
+        // ===== COPIAR CÓDIGO COM TOAST LIMPO =====
         function copiarCodigo() {
             const input = document.getElementById('codigoPix');
             const btn = document.getElementById('btnCopiar');
@@ -1230,16 +1233,18 @@
             }
 
             navigator.clipboard.writeText(input.value).then(() => {
-                // Feedback no botão
+                // Muda o texto do botão TEMPORARIAMENTE
                 btn.textContent = '✅ Copiado!';
-                btn.className = 'copiado';
+                btn.style.background = '#4ade80';
+                btn.style.color = '#1a1a1a';
                 setTimeout(() => {
                     btn.textContent = 'Copiar código PIX';
-                    btn.className = '';
-                }, 2500);
+                    btn.style.background = '#FF00FF';
+                    btn.style.color = '#fff';
+                }, 3000);
 
-                // Toast animado
-                toastMsg.innerHTML = '✅ Copiado para área de transferência!';
+                // Toast com mensagem limpa
+                toastMsg.innerHTML = 'Copiado para área de transferência!';
                 toast.style.borderColor = '#4ade80';
                 toast.style.color = '#4ade80';
                 toast.classList.add('show');
@@ -1249,13 +1254,15 @@
                 input.select();
                 document.execCommand('copy');
                 btn.textContent = '✅ Copiado!';
-                btn.className = 'copiado';
+                btn.style.background = '#4ade80';
+                btn.style.color = '#1a1a1a';
                 setTimeout(() => {
                     btn.textContent = 'Copiar código PIX';
-                    btn.className = '';
-                }, 2500);
+                    btn.style.background = '#FF00FF';
+                    btn.style.color = '#fff';
+                }, 3000);
 
-                toastMsg.innerHTML = '✅ Copiado para área de transferência!';
+                toastMsg.innerHTML = 'Copiado para área de transferência!';
                 toast.style.borderColor = '#4ade80';
                 toast.style.color = '#4ade80';
                 toast.classList.add('show');
