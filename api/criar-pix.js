@@ -37,51 +37,35 @@ module.exports = async (req, res) => {
         const data = response.data;
         console.log('📦 Resposta Zpay:', JSON.stringify(data, null, 2));
 
-        // ============================================================
-        // 🔥 CORREÇÃO: USA O CAMPO CERTO
-        // ============================================================
-        // O dono da Zpay disse:
-        // - O código Pix copia e cola vem no campo "copypaste" (ou pixCode/brCode)
-        // - O paymentId é só o ID interno, NÃO é o código Pix
-        // - O QR Code pode vir pronto (qrCodeURL) ou vc gera a partir do copypaste
-        // ============================================================
-
         const paymentId = data.id || data.paymentId || data.transactionId;
 
-        // 🔥 CAMPO CERTO: copypaste (ou pixCode, brCode, etc)
+        // 🔥 CAMPO CERTO: copypaste (o que o dono da Zpay falou)
         const codigoPix = data.copypaste || data.pixCode || data.pix_code || data.brCode || data.pix || data.payload || null;
 
-        // 🔥 QR Code: se a Zpay já retorna, usa ele. Senão, gera a partir do copypaste
+        // 🔥 QR Code: se a Zpay já retorna, usa ele
         const qrCodeURL = data.qrCodeURL || data.qrCode || data.qr_code || data.qrCodeImage || null;
 
-        // Se não veio QR Code pronto, gera a partir do código Pix
         let qrCodeFinal = qrCodeURL;
         if (!qrCodeFinal && codigoPix) {
-            qrCodeFinal = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix)}`;
+            qrCodeFinal = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(codigoPix)}`;
         }
 
-        // Se ainda não tem QR Code, usa o paymentId como fallback (mas não é ideal)
         if (!qrCodeFinal) {
-            qrCodeFinal = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentId)}`;
+            qrCodeFinal = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(paymentId)}`;
         }
 
         res.status(200).json({
             success: true,
             pix: {
                 qrCode: qrCodeFinal,
-                codigoCopiaCola: codigoPix || paymentId, // USA O copypaste, NÃO o paymentId
-                paymentId: paymentId // só pra referência
+                codigoCopiaCola: codigoPix || paymentId,
+                paymentId: paymentId
             },
             transactionId: paymentId
         });
 
     } catch (error) {
-        console.error('❌ Erro na Zpay:', {
-            status: error.response?.status,
-            data: error.response?.data,
-            message: error.message
-        });
-
+        console.error('❌ Erro na Zpay:', error.response?.data || error.message);
         res.status(400).json({
             success: false,
             error: error.response?.data?.message || error.message || 'Erro ao gerar PIX'
