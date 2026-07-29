@@ -18,8 +18,6 @@ module.exports = async (req, res) => {
         const CLIENT_SECRET = 'zsk_87b13fb23ba5eed5d6d9f0f9e6153d20dfeac10e24a66dd6';
         const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
 
-        console.log('📤 Enviando para Zpay:', { valor, descricao, nome_cliente });
-
         const response = await axios.post(
             `${ZPAY_API_URL}/payments`,
             {
@@ -40,43 +38,32 @@ module.exports = async (req, res) => {
 
         const data = response.data;
 
-        // 🔥 CAPTURA TODOS OS CAMPOS POSSÍVEIS
-        const paymentId = data.id || data.paymentId || data.transactionId || data.payment_id;
+        // 🔥 PRIORIDADE: usa o pixCode ou pix da Zpay
+        let pixCode = data.pixCode || data.pix_code || data.pix || data.brCode || data.pixCopiaCola || null;
 
-        // QR Code - tenta vários nomes de campo
-        const qrCode = data.qrCode || data.qr_code || data.qrCodeImage || data.pixQrCode || data.qrcode || data.qr || null;
-
-        // Código Pix (copia e cola) - tenta vários nomes
-        const pixCode = data.pixCode || data.pix_code || data.brCode || data.pixCopiaCola || data.pixKey || data.pix || data.pixQrCode || null;
-
-        // Link de pagamento
-        const paymentLink = data.paymentUrl || data.url || data.checkoutUrl || data.link || data.payment_link || null;
-
-        // Se veio a resposta mas não os campos específicos, tenta extrair de dentro de objetos aninhados
-        let finalQrCode = qrCode;
-        let finalPixCode = pixCode;
-
-        // Se não encontrou, procura dentro de objetos
-        if (!finalQrCode && data.pix && data.pix.qrCode) {
-            finalQrCode = data.pix.qrCode;
-            finalPixCode = data.pix.pixCode || data.pix.code;
+        // Se veio um objeto pix com code dentro
+        if (!pixCode && data.pix && data.pix.code) {
+            pixCode = data.pix.code;
+        }
+        if (!pixCode && data.pix && data.pix.pixCode) {
+            pixCode = data.pix.pixCode;
         }
 
-        if (!finalQrCode && data.data && data.data.qrCode) {
-            finalQrCode = data.data.qrCode;
-            finalPixCode = data.data.pixCode || data.data.code;
+        // Se ainda não tem, usa o que veio no campo pix
+        if (!pixCode && data.pix && typeof data.pix === 'string') {
+            pixCode = data.pix;
         }
 
-        // Se ainda não tem, usa o paymentId como fallback
-        if (!finalQrCode && paymentId) {
-            finalQrCode = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentId)}`;
+        // Último recurso: usa o ID
+        if (!pixCode) {
+            pixCode = data.id || data.paymentId || data.transactionId;
         }
 
-        if (!finalPixCode && paymentId) {
-            finalPixCode = paymentId;
-        }
+        // 🔥 GERA O QR CODE A PARTIR DO CÓDIGO PIX
+        const qrCodeUrl = pixCode ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}` : null;
 
-        // Se não veio nada, avisa
+        const paymentId = data.id || data.paymentId || data.transactionId;
+
         if (!paymentId) {
             return res.status(400).json({
                 success: false,
@@ -87,9 +74,9 @@ module.exports = async (req, res) => {
         res.status(200).json({
             success: true,
             pix: {
-                qrCode: finalQrCode || paymentLink || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentId)}`,
-                codigoCopiaCola: finalPixCode || paymentId,
-                raw: data // opcional, pra debug
+                qrCode: qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode || paymentId)}`,
+                codigoCopiaCola: pixCode || paymentId,
+                raw: data
             },
             transactionId: paymentId
         });
