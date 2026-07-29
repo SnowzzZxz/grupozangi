@@ -831,4 +831,225 @@
                     <span class="label">EU QUERO AGORA!</span>
                 </div>
                 <div class="content">
-                    <img src
+                    <img src="https://sharkbot.com.br/api/media/uploads/930dc24a-095b-46f4-871f-8c07055541ea.jpg" alt="Pedido especial!">
+                    <div class="info">
+                        <h4>Pedido especial!</h4>
+                        <p>Peça qualquer coisaa</p>
+                        <div class="price">Por apenas: <strong>R$ 14,99</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="background: #73187d;">
+            <div class="summary">
+                <div class="row">
+                    <span>Valor original:</span>
+                    <span class="line-through">R$ 19,99</span>
+                </div>
+                <div class="row discount">
+                    <span class="label">Desconto:</span>
+                    <span>-R$ 10,00</span>
+                </div>
+                <div class="row total">
+                    <span class="label">Valor total:</span>
+                    <span class="value" id="valorTotal">R$ 9,99</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-buy" onclick="gerarPix()">DESBLOQUEAR ACESSO AGORA!</button>
+
+        <div class="secure-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
+            <span>Ambiente criptografado e 100% seguro</span>
+        </div>
+
+        <div class="terms">
+            <p>
+                Ao efetuar a compra, declaro que a <strong>Shark Bot</strong> atua apenas como intermediadora do pagamento, nao sendo responsavel pelo conteudo, qualidade ou entrega do produto/servico ofertado pelo vendedor. Concordo com os <a href="#">Termos de Uso</a> e <a href="#">Politica de Privacidade</a>.
+            </p>
+            <button class="report">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"></path></svg>
+                Denunciar conteudo irregular
+            </button>
+        </div>
+
+        <p class="footer-text">Após a compra você vai receber meu zangi pra me chamar e eu te adicionar 🔥</p>
+    </div>
+
+    <!-- ===== MODAL IGUAL AO EXEMPLO ===== -->
+    <div class="modal" id="modalPix">
+        <div class="modal-content">
+            <button class="close" onclick="fecharModal()">×</button>
+
+            <h2 style="color: #FF00FF; font-size: 18px; margin-bottom: 5px;">VOCÊ ESTÁ ADQUIRINDO:</h2>
+            <h3 style="color: white; font-size: 22px; margin-bottom: 5px;">Grupo do Zangii</h3>
+
+            <div style="margin: 10px 0 20px 0;">
+                <span style="color: #6b7280; text-decoration: line-through; font-size: 16px; display: block;">De: R$ 19,99</span>
+                <span style="color: #4ade80; font-size: 24px; font-weight: bold;">Por: R$ 9,99 No PIX</span>
+            </div>
+
+            <div class="status" id="statusPix">⏳ Aguardando pagamento</div>
+
+            <p style="color: #adb5bd; font-size: 14px; margin-bottom: 10px;">Escaneie o QR Code ou copie o código PIX</p>
+            <img id="qrCodeImage" src="" alt="QR Code PIX" style="max-width: 200px; margin: 0 auto 20px; display: block;">
+
+            <p style="color: #adb5bd; font-size: 14px; margin-bottom: 8px;">Ou copie o código PIX:</p>
+            <div class="pix-code">
+                <input type="text" id="codigoPix" readonly>
+                <button onclick="copiarCodigo()">Copiar código PIX</button>
+            </div>
+
+            <div style="border-top: 1px solid #333; padding-top: 15px; margin-top: 10px;">
+                <span style="color: #adb5bd;">Total: </span>
+                <span style="color: #4ade80; font-weight: bold; font-size: 20px;" id="valorTotalModal">R$ 9,99</span>
+            </div>
+
+            <p class="termos-modal">
+                Ao efetuar a compra, declaro que a atua apenas como intermediadora do pagamento, não sendo responsável pelo conteúdo, qualidade ou entrega do produto/serviço ofertado pelo vendedor. Concordo com os <a href="#">Termos de Uso</a> e <a href="#">Política de Privacidade</a>.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ===== TIMER =====
+        let totalSegundos = 280;
+        
+        function atualizarTimer() {
+            if (totalSegundos <= 0) {
+                document.getElementById('timerDisplay').textContent = '00:00:00';
+                return;
+            }
+            totalSegundos--;
+            const horas = Math.floor(totalSegundos / 3600);
+            const minutos = Math.floor((totalSegundos % 3600) / 60);
+            const segundos = totalSegundos % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+            
+            const progresso = (totalSegundos / 280) * 100;
+            document.getElementById('progressFill').style.width = progresso + '%';
+        }
+        
+        setInterval(atualizarTimer, 1000);
+
+        // ===== UPSELIS =====
+        let upsellsSelecionados = [];
+
+        function toggleUpsell(element, tipo) {
+            const checkbox = document.getElementById('check-' + tipo);
+            const index = upsellsSelecionados.indexOf(tipo);
+            
+            if (index > -1) {
+                upsellsSelecionados.splice(index, 1);
+                checkbox.classList.remove('checked');
+                element.style.borderColor = '#fca5a5';
+            } else {
+                upsellsSelecionados.push(tipo);
+                checkbox.classList.add('checked');
+                element.style.borderColor = '#FF00FF';
+            }
+            
+            atualizarTotal();
+        }
+
+        function atualizarTotal() {
+            let total = 9.99;
+            if (upsellsSelecionados.includes('fotos')) total += 4.99;
+            if (upsellsSelecionados.includes('call')) total += 4.99;
+            if (upsellsSelecionados.includes('especial')) total += 14.99;
+            document.getElementById('valorTotal').textContent = 'R$ ' + total.toFixed(2);
+            document.getElementById('valorTotalModal').textContent = 'R$ ' + total.toFixed(2);
+        }
+
+        // ===== GERAR PIX =====
+        async function gerarPix() {
+            const btn = document.querySelector('.btn-buy');
+            const textoOriginal = btn.textContent;
+            
+            btn.textContent = '⏳ Gerando PIX...';
+            btn.disabled = true;
+            
+            try {
+                let total = 9.99;
+                if (upsellsSelecionados.includes('fotos')) total += 4.99;
+                if (upsellsSelecionados.includes('call')) total += 4.99;
+                if (upsellsSelecionados.includes('especial')) total += 14.99;
+
+                const response = await fetch('/api/criar-pix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        valor: total.toFixed(2),
+                        descricao: 'Grupo do Zangii',
+                        nome_cliente: 'Cliente'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('qrCodeImage').src = data.pix.qrCode;
+                    document.getElementById('codigoPix').value = data.pix.codigoCopiaCola;
+                    document.getElementById('modalPix').classList.add('active');
+                    document.getElementById('statusPix').textContent = '⏳ Aguardando pagamento...';
+                    document.getElementById('statusPix').style.color = '#facc15';
+                    
+                    verificarPagamento(data.transactionId);
+                } else {
+                    alert('Erro ao gerar PIX: ' + data.error);
+                }
+            } catch (error) {
+                alert('Erro ao gerar pagamento. Tente novamente.');
+                console.error(error);
+            }
+            
+            btn.textContent = textoOriginal;
+            btn.disabled = false;
+        }
+
+        // ===== VERIFICAR PAGAMENTO =====
+        async function verificarPagamento(transactionId) {
+            let tentativas = 0;
+            const statusEl = document.getElementById('statusPix');
+            
+            const intervalo = setInterval(async () => {
+                tentativas++;
+                try {
+                    const response = await fetch(`/api/verificar-pagamento?id=${transactionId}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'paid') {
+                        clearInterval(intervalo);
+                        statusEl.textContent = '✅ PAGAMENTO CONFIRMADO!';
+                        statusEl.style.color = '#4ade80';
+                        setTimeout(() => {
+                            window.location.href = '/obrigado';
+                        }, 3000);
+                    } else if (tentativas > 20) {
+                        clearInterval(intervalo);
+                        statusEl.textContent = '⏳ Se já pagou, aguarde alguns minutos.';
+                    }
+                } catch (error) {}
+            }, 5000);
+        }
+
+        // ===== MODAL =====
+        function fecharModal() {
+            document.getElementById('modalPix').classList.remove('active');
+        }
+
+        function copiarCodigo() {
+            const codigo = document.getElementById('codigoPix');
+            codigo.select();
+            navigator.clipboard.writeText(codigo.value);
+            alert('✅ Código PIX copiado!');
+        }
+    </script>
+
+</body>
+</html>
