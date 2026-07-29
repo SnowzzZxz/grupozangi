@@ -25,9 +25,7 @@ module.exports = async (req, res) => {
             {
                 amount: parseFloat(valor),
                 payerName: nome_cliente || 'Cliente',
-                description: descricao || 'Produto',
-                // Se tiver tag, descomente:
-                // tag: 'grupo_zangii'
+                description: descricao || 'Produto'
             },
             {
                 headers: {
@@ -38,15 +36,40 @@ module.exports = async (req, res) => {
             }
         );
 
-        console.log('✅ Resposta Zpay:', response.data);
+        console.log('✅ Resposta Zpay COMPLETA:', JSON.stringify(response.data, null, 2));
+
+        // Extrai os dados corretamente
+        const data = response.data;
+        const paymentId = data.id || data.paymentId || data.transactionId;
+
+        // Tenta encontrar o QR Code e o código Pix
+        const qrCode = data.qrCode || data.qr_code || data.qrCodeImage || data.pixQrCode || null;
+        const pixCode = data.pixCode || data.pix_code || data.brCode || data.pixCopiaCola || data.pixKey || null;
+
+        // Se a Zpay retornou um link de pagamento, podemos gerar um QR Code a partir dele
+        const paymentLink = data.paymentUrl || data.url || data.checkoutUrl || data.link || null;
+
+        // Se não veio QR Code da Zpay, gera um QR Code genérico
+        const finalQrCode = qrCode || (pixCode ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}` : null);
+
+        // Se não veio nada, avisa
+        if (!paymentId || (!finalQrCode && !pixCode && !paymentLink)) {
+            console.error('❌ Zpay não retornou dados suficientes:', data);
+            return res.status(400).json({
+                success: false,
+                error: 'A Zpay não retornou os dados do PIX. Resposta: ' + JSON.stringify(data)
+            });
+        }
 
         res.status(200).json({
             success: true,
             pix: {
-                qrCode: response.data.qrCode || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${response.data.id}`,
-                codigoCopiaCola: response.data.pixCode || response.data.id
+                qrCode: finalQrCode || paymentLink,
+                codigoCopiaCola: pixCode || paymentId || paymentLink,
+                paymentId: paymentId,
+                raw: data // opcional, pra debug
             },
-            transactionId: response.data.id
+            transactionId: paymentId
         });
 
     } catch (error) {
@@ -56,7 +79,6 @@ module.exports = async (req, res) => {
             message: error.message
         });
 
-        // Retorna o erro detalhado da Zpay
         res.status(400).json({
             success: false,
             error: error.response?.data?.message || error.message || 'Erro ao gerar PIX'
