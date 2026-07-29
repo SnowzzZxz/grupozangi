@@ -34,48 +34,69 @@ module.exports = async (req, res) => {
             }
         );
 
-        console.log('✅ Resposta Zpay:', JSON.stringify(response.data, null, 2));
-
         const data = response.data;
 
-        // 🔥 PRIORIDADE: usa o pixCode ou pix da Zpay
-        let pixCode = data.pixCode || data.pix_code || data.pix || data.brCode || data.pixCopiaCola || null;
+        // 🔥 FUNÇÃO PARA EXTRAIR O CÓDIGO PIX REAL
+        function extrairCodigoPix(obj) {
+            // Lista de campos que podem conter o código Pix
+            const campos = [
+                'pixCode', 'pix_code', 'pix', 'brCode', 'pixCopiaCola',
+                'pixKey', 'qrCodeString', 'payload', 'pixPayload',
+                'code', 'paymentCode', 'transactionCode', 'qrCode',
+                'qr_code', 'pixQrCode'
+            ];
 
-        // Se veio um objeto pix com code dentro
-        if (!pixCode && data.pix && data.pix.code) {
-            pixCode = data.pix.code;
-        }
-        if (!pixCode && data.pix && data.pix.pixCode) {
-            pixCode = data.pix.pixCode;
+            // Procura em todos os campos do objeto
+            for (const campo of campos) {
+                if (obj[campo] && typeof obj[campo] === 'string') {
+                    const valor = obj[campo];
+                    // Se começa com "000201" ou contém "br.gov.bcb.pix", é o código Pix
+                    if (valor.startsWith('000201') || valor.includes('br.gov.bcb.pix')) {
+                        return valor;
+                    }
+                    // Se parece com um código Pix (começa com números e tem pontuação)
+                    if (/^[0-9]{6}/.test(valor) && valor.length > 30) {
+                        return valor;
+                    }
+                }
+            }
+
+            // Procura dentro de objetos aninhados
+            for (const key of Object.keys(obj)) {
+                if (obj[key] && typeof obj[key] === 'object') {
+                    const resultado = extrairCodigoPix(obj[key]);
+                    if (resultado) return resultado;
+                }
+            }
+
+            return null;
         }
 
-        // Se ainda não tem, usa o que veio no campo pix
-        if (!pixCode && data.pix && typeof data.pix === 'string') {
-            pixCode = data.pix;
-        }
+        // 🔥 EXTRAI O CÓDIGO PIX REAL
+        let pixCode = extrairCodigoPix(data);
 
-        // Último recurso: usa o ID
+        // Se não encontrou, usa o ID como fallback
         if (!pixCode) {
             pixCode = data.id || data.paymentId || data.transactionId;
         }
 
-        // 🔥 GERA O QR CODE A PARTIR DO CÓDIGO PIX
-        const qrCodeUrl = pixCode ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}` : null;
+        // 🔥 GERA QR CODE A PARTIR DO CÓDIGO PIX
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
 
         const paymentId = data.id || data.paymentId || data.transactionId;
 
         if (!paymentId) {
             return res.status(400).json({
                 success: false,
-                error: 'Zpay não retornou ID do pagamento. Resposta: ' + JSON.stringify(data)
+                error: 'Zpay não retornou ID do pagamento.'
             });
         }
 
         res.status(200).json({
             success: true,
             pix: {
-                qrCode: qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode || paymentId)}`,
-                codigoCopiaCola: pixCode || paymentId,
+                qrCode: qrCodeUrl,
+                codigoCopiaCola: pixCode,
                 raw: data
             },
             transactionId: paymentId
