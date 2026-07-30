@@ -174,11 +174,46 @@
             color: #adb5bd;
             font-size: 18px;
             line-height: 1.8;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
         .popup-box p strong {
             color: #fff;
         }
+
+        /* ZANGI - CLEAN */
+        .zangi-clean {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 12px 0 18px 0;
+            color: #adb5bd;
+            font-size: 15px;
+        }
+        .zangi-clean span {
+            font-family: monospace;
+            color: #adb5bd;
+            letter-spacing: 0.5px;
+        }
+        .zangi-clean .btn-copiar-clean {
+            background: none;
+            border: none;
+            color: #FF00FF;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .zangi-clean .btn-copiar-clean:hover {
+            background: rgba(255, 0, 255, 0.1);
+            transform: scale(1.05);
+        }
+        .zangi-clean .btn-copiar-clean.copiado {
+            color: #4ade80;
+        }
+
         .popup-box .btn-fechar-popup {
             background: #FF00FF;
             border: none;
@@ -190,6 +225,7 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 4px 20px rgba(255, 0, 255, 0.3);
+            margin-top: 6px;
         }
         .popup-box .btn-fechar-popup:hover {
             transform: scale(1.05);
@@ -1141,14 +1177,22 @@
         <p class="footer-text">Após a compra você vai receber meu zangi pra me chamar e eu te adicionar 🔥</p>
     </div>
 
-    <!-- ===== POPUP ALICE (TELA CHEIA) ===== -->
+    <!-- ===== POPUP ALICE ===== -->
     <div class="popup-overlay" id="popupAlice">
         <div class="popup-box">
-            <h2>👀 Um pouco sobre mim  </h2>
+            <h2>👀 Um pouco sobre mim <3</h2>
             <p>
-                <strong>Oii me chamo Alice tenho, 14 anos<br />
-                Vendo meus conteúdinhos exclusivos e acesso ao meu grupinho no Zangi  <br />
+                <strong>Oii me chamo Alice, tenho 14 anos<br />
+                Vendo meus conteúdinhos exclusivos<br />
+                e acesso ao meu grupinho no Zangi.
             </p>
+
+            <!-- ZANGI CLEAN -->
+            <div class="zangi-clean">
+                <span id="zangiNumero">zangi_123456789</span>
+                <button class="btn-copiar-clean" id="btnCopiarZangi" onclick="copiarZangi()">Copiar</button>
+            </div>
+
             <button class="btn-fechar-popup" onclick="fecharPopupAlice()">Fechar</button>
         </div>
     </div>
@@ -1337,7 +1381,7 @@
             document.getElementById('modalPix').classList.remove('active');
         }
 
-        // COPIAR CÓDIGO
+        // COPIAR CÓDIGO PIX
         function copiarCodigo() {
             const input = document.getElementById('codigoPix');
             const btn = document.getElementById('btnCopiar');
@@ -1388,12 +1432,54 @@
             });
         }
 
+        // ===== COPIAR ZANGI (CLEAN) =====
+        function copiarZangi() {
+            const numero = document.getElementById('zangiNumero').textContent;
+            const btn = document.getElementById('btnCopiarZangi');
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+
+            navigator.clipboard.writeText(numero).then(() => {
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copiado');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copiado');
+                }, 2500);
+
+                toastMsg.innerHTML = '✅ Número do Zangi copiado!';
+                toast.style.borderColor = '#4ade80';
+                toast.style.color = '#4ade80';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            }).catch(() => {
+                const input = document.createElement('input');
+                input.value = numero;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copiado');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copiado');
+                }, 2500);
+
+                toastMsg.innerHTML = '✅ Número do Zangi copiado!';
+                toast.style.borderColor = '#4ade80';
+                toast.style.color = '#4ade80';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            });
+        }
+
         // ===== POPUP ALICE =====
         function abrirPopupAlice() {
             const overlay = document.getElementById('popupAlice');
             overlay.classList.remove('closing');
             overlay.style.display = 'flex';
-            // Força reflow pra animação funcionar
             void overlay.offsetWidth;
             overlay.classList.add('open');
         }
