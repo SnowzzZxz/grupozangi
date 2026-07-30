@@ -95,10 +95,112 @@
             margin-bottom: 12px;
         }
 
+        /* BOTÃO CONHECER ALICE */
+        .btn-alice {
+            background: #FF00FF;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4);
+            animation: pulse-btn 2s infinite;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .btn-alice:hover {
+            transform: scale(1.05);
+        }
+        @keyframes pulse-btn {
+            0% { box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4); }
+            50% { box-shadow: 0 4px 40px rgba(255, 0, 255, 0.8); }
+            100% { box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4); }
+        }
+
+        /* ===== POPUP TELA CHEIA ===== */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .popup-overlay.open {
+            display: flex;
+        }
+
+        .popup-box {
+            background: #1a1a1a;
+            border: 2px solid #FF00FF;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 0, 255, 0.3);
+            transform: translateY(60px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .popup-overlay.open .popup-box {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .popup-overlay.closing .popup-box {
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.4s ease-in;
+        }
+
+        .popup-box h2 {
+            color: #FF00FF;
+            font-size: 28px;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+        .popup-box p {
+            color: #adb5bd;
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 24px;
+        }
+        .popup-box p strong {
+            color: #fff;
+        }
+        .popup-box .btn-fechar-popup {
+            background: #FF00FF;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.3);
+        }
+        .popup-box .btn-fechar-popup:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 40px rgba(255, 0, 255, 0.6);
+        }
+
         /* PRODUTO */
         .product-row {
             display: flex;
             gap: 16px;
+            align-items: center;
         }
         .product-row img {
             width: 128px;
@@ -462,7 +564,6 @@
             transform: scale(0.98);
         }
 
-        /* SEGURANÇA */
         .secure-badge {
             display: flex;
             align-items: center;
@@ -480,7 +581,6 @@
             font-size: 12px;
         }
 
-        /* TERMOS */
         .terms {
             margin-top: 32px;
             padding-top: 24px;
@@ -518,7 +618,7 @@
             margin-top: 16px;
         }
 
-        /* ===== MODAL IGUAL SHARK BOT ===== */
+        /* ===== MODAL ===== */
         .modal {
             position: fixed;
             top: 0;
@@ -728,11 +828,11 @@
             display: none;
         }
 
-        /* ===== RESPONSIVO ===== */
         @media (max-width: 480px) {
             .product-row {
                 flex-direction: column;
                 align-items: center;
+                text-align: center;
             }
             .product-row img {
                 width: 100%;
@@ -792,6 +892,15 @@
                 padding: 10px 18px;
                 width: 90%;
             }
+            .popup-box {
+                padding: 28px 20px;
+            }
+            .popup-box h2 {
+                font-size: 22px;
+            }
+            .popup-box p {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -816,6 +925,13 @@
 
     <!-- CONTEÚDO -->
     <div class="container">
+
+        <!-- ===== BOTÃO CONHECER ALICE ===== -->
+        <div style="text-align: center;">
+            <button class="btn-alice" onclick="abrirPopupAlice()">
+                👀 Conheça a Alice
+            </button>
+        </div>
 
         <!-- PRODUTO -->
         <div class="card" style="background: #73187d;">
@@ -1025,7 +1141,20 @@
         <p class="footer-text">Após a compra você vai receber meu zangi pra me chamar e eu te adicionar 🔥</p>
     </div>
 
-    <!-- ===== MODAL ===== -->
+    <!-- ===== POPUP ALICE (TELA CHEIA) ===== -->
+    <div class="popup-overlay" id="popupAlice">
+        <div class="popup-box">
+            <h2>👀 Alice</h2>
+            <p>
+                <strong>Alice</strong>, 24 anos.<br />
+                Criadora de conteúdo adulto exclusivo.<br />
+                Aqui você encontra um grupo fechado com conteúdos especiais.
+            </p>
+            <button class="btn-fechar-popup" onclick="fecharPopupAlice()">Fechar</button>
+        </div>
+    </div>
+
+    <!-- ===== MODAL PIX ===== -->
     <div class="modal" id="modalPix">
         <div class="modal-content">
             <button class="close" onclick="fecharModal()">×</button>
@@ -1260,10 +1389,40 @@
             });
         }
 
+        // ===== POPUP ALICE =====
+        function abrirPopupAlice() {
+            const overlay = document.getElementById('popupAlice');
+            overlay.classList.remove('closing');
+            overlay.style.display = 'flex';
+            // Força reflow pra animação funcionar
+            void overlay.offsetWidth;
+            overlay.classList.add('open');
+        }
+
+        function fecharPopupAlice() {
+            const overlay = document.getElementById('popupAlice');
+            overlay.classList.remove('open');
+            overlay.classList.add('closing');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.classList.remove('closing');
+            }, 500);
+        }
+
         // CLIQUE FORA DO MODAL PRA FECHAR
         document.getElementById('modalPix').addEventListener('click', function(e) {
             if (e.target === this) {
                 fecharModal();
+            }
+        });
+
+        // FECHA POPUP ALICE COM ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const popup = document.getElementById('popupAlice');
+                if (popup.style.display === 'flex') {
+                    fecharPopupAlice();
+                }
             }
         });
     </script>
