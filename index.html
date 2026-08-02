@@ -95,10 +95,148 @@
             margin-bottom: 12px;
         }
 
+        /* BOTÃO CONHECER ALICE */
+        .btn-alice {
+            background: #FF00FF;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4);
+            animation: pulse-btn 2s infinite;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .btn-alice:hover {
+            transform: scale(1.05);
+        }
+        @keyframes pulse-btn {
+            0% { box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4); }
+            50% { box-shadow: 0 4px 40px rgba(255, 0, 255, 0.8); }
+            100% { box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4); }
+        }
+
+        /* ===== POPUP TELA CHEIA ===== */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .popup-overlay.open {
+            display: flex;
+        }
+
+        .popup-box {
+            background: #1a1a1a;
+            border: 2px solid #FF00FF;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 0, 255, 0.3);
+            transform: translateY(60px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .popup-overlay.open .popup-box {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .popup-overlay.closing .popup-box {
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.4s ease-in;
+        }
+
+        .popup-box h2 {
+            color: #FF00FF;
+            font-size: 28px;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+        .popup-box p {
+            color: #adb5bd;
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .popup-box p strong {
+            color: #fff;
+        }
+
+        /* ZANGI - CLEAN */
+        .zangi-clean {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 12px 0 18px 0;
+            color: #adb5bd;
+            font-size: 15px;
+        }
+        .zangi-clean span {
+            font-family: monospace;
+            color: #adb5bd;
+            letter-spacing: 0.5px;
+        }
+        .zangi-clean .btn-copiar-clean {
+            background: none;
+            border: none;
+            color: #FF00FF;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .zangi-clean .btn-copiar-clean:hover {
+            background: rgba(255, 0, 255, 0.1);
+            transform: scale(1.05);
+        }
+        .zangi-clean .btn-copiar-clean.copiado {
+            color: #4ade80;
+        }
+
+        .popup-box .btn-fechar-popup {
+            background: #FF00FF;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.3);
+            margin-top: 6px;
+        }
+        .popup-box .btn-fechar-popup:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 40px rgba(255, 0, 255, 0.6);
+        }
+
         /* PRODUTO */
         .product-row {
             display: flex;
             gap: 16px;
+            align-items: center;
         }
         .product-row img {
             width: 128px;
@@ -462,7 +600,6 @@
             transform: scale(0.98);
         }
 
-        /* SEGURANÇA */
         .secure-badge {
             display: flex;
             align-items: center;
@@ -480,7 +617,6 @@
             font-size: 12px;
         }
 
-        /* TERMOS */
         .terms {
             margin-top: 32px;
             padding-top: 24px;
@@ -518,7 +654,7 @@
             margin-top: 16px;
         }
 
-        /* ===== MODAL IGUAL SHARK BOT ===== */
+        /* ===== MODAL ===== */
         .modal {
             position: fixed;
             top: 0;
@@ -728,11 +864,11 @@
             display: none;
         }
 
-        /* ===== RESPONSIVO ===== */
         @media (max-width: 480px) {
             .product-row {
                 flex-direction: column;
                 align-items: center;
+                text-align: center;
             }
             .product-row img {
                 width: 100%;
@@ -792,6 +928,15 @@
                 padding: 10px 18px;
                 width: 90%;
             }
+            .popup-box {
+                padding: 28px 20px;
+            }
+            .popup-box h2 {
+                font-size: 22px;
+            }
+            .popup-box p {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -816,6 +961,13 @@
 
     <!-- CONTEÚDO -->
     <div class="container">
+
+        <!-- ===== BOTÃO CONHECER ALICE ===== -->
+        <div style="text-align: center;">
+            <button class="btn-alice" onclick="abrirPopupAlice()">
+                👀 Conheça a Alice
+            </button>
+        </div>
 
         <!-- PRODUTO -->
         <div class="card" style="background: #73187d;">
@@ -1025,7 +1177,27 @@
         <p class="footer-text">Após a compra você vai receber meu zangi pra me chamar e eu te adicionar 🔥</p>
     </div>
 
-    <!-- ===== MODAL ===== -->
+    <!-- ===== POPUP ALICE ===== -->
+    <div class="popup-overlay" id="popupAlice">
+        <div class="popup-box">
+            <h2>👀 Um pouco sobre mim <3</h2>
+            <p>
+                <strong>Oii me chamo Alice, tenho 14 anos</strong><br />
+                Vendo meus conteúdinhos exclusivos<br />
+                e acesso ao meu grupinho no Zangi.
+            </p>
+
+            <!-- ZANGI CLEAN -->
+            <div class="zangi-clean">
+                <span id="zangiNumero">zangi_123456789</span>
+                <button class="btn-copiar-clean" id="btnCopiarZangi" onclick="copiarZangi()">Copiar</button>
+            </div>
+
+            <button class="btn-fechar-popup" onclick="fecharPopupAlice()">Fechar</button>
+        </div>
+    </div>
+
+    <!-- ===== MODAL PIX ===== -->
     <div class="modal" id="modalPix">
         <div class="modal-content">
             <button class="close" onclick="fecharModal()">×</button>
@@ -1209,7 +1381,7 @@
             document.getElementById('modalPix').classList.remove('active');
         }
 
-        // COPIAR CÓDIGO
+        // COPIAR CÓDIGO PIX
         function copiarCodigo() {
             const input = document.getElementById('codigoPix');
             const btn = document.getElementById('btnCopiar');
@@ -1260,10 +1432,82 @@
             });
         }
 
+        // ===== COPIAR ZANGI (CLEAN) =====
+        function copiarZangi() {
+            const numero = document.getElementById('zangiNumero').textContent;
+            const btn = document.getElementById('btnCopiarZangi');
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+
+            navigator.clipboard.writeText(numero).then(() => {
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copiado');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copiado');
+                }, 2500);
+
+                toastMsg.innerHTML = '✅ Número do Zangi copiado!';
+                toast.style.borderColor = '#4ade80';
+                toast.style.color = '#4ade80';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            }).catch(() => {
+                const input = document.createElement('input');
+                input.value = numero;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+
+                btn.textContent = '✅ Copiado!';
+                btn.classList.add('copiado');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copiado');
+                }, 2500);
+
+                toastMsg.innerHTML = '✅ Número do Zangi copiado!';
+                toast.style.borderColor = '#4ade80';
+                toast.style.color = '#4ade80';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            });
+        }
+
+        // ===== POPUP ALICE =====
+        function abrirPopupAlice() {
+            const overlay = document.getElementById('popupAlice');
+            overlay.classList.remove('closing');
+            overlay.style.display = 'flex';
+            void overlay.offsetWidth;
+            overlay.classList.add('open');
+        }
+
+        function fecharPopupAlice() {
+            const overlay = document.getElementById('popupAlice');
+            overlay.classList.remove('open');
+            overlay.classList.add('closing');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.classList.remove('closing');
+            }, 500);
+        }
+
         // CLIQUE FORA DO MODAL PRA FECHAR
         document.getElementById('modalPix').addEventListener('click', function(e) {
             if (e.target === this) {
                 fecharModal();
+            }
+        });
+
+        // FECHA POPUP ALICE COM ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const popup = document.getElementById('popupAlice');
+                if (popup.style.display === 'flex') {
+                    fecharPopupAlice();
+                }
             }
         });
     </script>
