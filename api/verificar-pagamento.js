@@ -26,9 +26,9 @@ module.exports = async (req, res) => {
 
         console.log(`🔍 Verificando pagamento: ${id}`);
 
-        // Busca as últimas 50 transações (todos os status)
+        // 🔥 BUSCA TODAS AS DOAÇÕES (SEM FILTRO DE STATUS)
         const response = await axios.get(
-            `${ZPAY_API_URL}/donations?limit=50`,
+            `${ZPAY_API_URL}/donations?limit=100`,
             {
                 headers: {
                     'client-id': CLIENT_ID,
@@ -37,25 +37,77 @@ module.exports = async (req, res) => {
             }
         );
 
-        const donations = response.data.donations || response.data || [];
+        // A Zpay pode retornar os dados em diferentes estruturas
+        let donations = [];
+        if (response.data && Array.isArray(response.data)) {
+            donations = response.data;
+        } else if (response.data && response.data.donations && Array.isArray(response.data.donations)) {
+            donations = response.data.donations;
+        } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+            donations = response.data.data;
+        } else {
+            // Se veio um objeto único, tenta transformar em array
+            donations = Object.values(response.data).filter(item => typeof item === 'object' && item !== null);
+        }
+
         console.log(`📦 ${donations.length} doações encontradas`);
 
-        // Procura o pagamento pelo ID
-        const found = donations.find(d => 
-            d.id === id || 
-            d.paymentId === id || 
-            d.transactionId === id ||
-            d.externalId === id
-        );
+        // 🔥 PROCURA O PAGAMENTO PELO ID EM VÁRIOS CAMPOS
+        const found = donations.find(d => {
+            const dId = d.id || d.paymentId || d.transactionId || d.externalId || d._id || '';
+            const searchId = id || '';
+            return String(dId).trim() === String(searchId).trim();
+        });
 
         if (found) {
-            const status = found.status || found.paymentStatus || 'pending';
+            // 🔥 EXTRAI O STATUS DE VÁRIOS CAMPOS POSSÍVEIS
+            const status = found.status || found.paymentStatus || found.state || found.paymentState || 'pending';
+            const statusLower = String(status).toLowerCase();
+            
             console.log(`✅ Pagamento encontrado: status = ${status}`);
+
+            // 🔥 VERIFICA SE ESTÁ PAGO
+            const isPaid = statusLower === 'paid' || 
+                          statusLower === 'approved' || 
+                          statusLower === 'confirmado' || 
+                          statusLower === 'completed' ||
+                          statusLower === 'success' ||
+                          statusLower === 'pago';
+
             res.status(200).json({
-                status: status === 'paid' || status === 'approved' || status === 'confirmado' ? 'paid' : 'pending'
+                status: isPaid ? 'paid' : 'pending'
             });
         } else {
-            console.log(`❌ Pagamento ${id} não encontrado`);
+            console.log(`❌ Pagamento ${id} não encontrado na lista de doações`);
+            
+            // 🔥 TENTA BUSCAR DIRETAMENTE PELO ID SE NÃO ACHOU NA LISTA
+            try {
+                const directResponse = await axios.get(
+                    `${ZPAY_API_URL}/donations/${id}`,
+                    {
+                        headers: {
+                            'client-id': CLIENT_ID,
+                            'client-secret': CLIENT_SECRET
+                        }
+                    }
+                );
+                
+                if (directResponse.data) {
+                    const directData = directResponse.data;
+                    const status = directData.status || directData.paymentStatus || 'pending';
+                    const statusLower = String(status).toLowerCase();
+                    const isPaid = statusLower === 'paid' || statusLower === 'approved' || statusLower === 'confirmado';
+                    
+                    console.log(`✅ Pagamento encontrado via busca direta: status = ${status}`);
+                    res.status(200).json({
+                        status: isPaid ? 'paid' : 'pending'
+                    });
+                    return;
+                }
+            } catch (directError) {
+                console.log('⚠️ Busca direta falhou:', directError.response?.status);
+            }
+
             res.status(200).json({
                 status: 'pending'
             });
